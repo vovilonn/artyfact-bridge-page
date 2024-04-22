@@ -1,232 +1,26 @@
 const ABI = [
     {
         inputs: [
-            {
-                internalType: "contract IERC20",
-                name: "_token",
-                type: "address",
-            },
-            {
-                internalType: "address[]",
-                name: "beneficiaries",
-                type: "address[]",
-            },
-            {
-                internalType: "uint256[]",
-                name: "amounts",
-                type: "uint256[]",
-            },
+            { internalType: "address", name: "spender", type: "address" },
+            { internalType: "uint256", name: "amount", type: "uint256" },
         ],
-        stateMutability: "nonpayable",
-        type: "constructor",
-    },
-    {
-        anonymous: false,
-        inputs: [
-            {
-                indexed: true,
-                internalType: "address",
-                name: "previousOwner",
-                type: "address",
-            },
-            {
-                indexed: true,
-                internalType: "address",
-                name: "newOwner",
-                type: "address",
-            },
-        ],
-        name: "OwnershipTransferred",
-        type: "event",
-    },
-    {
-        inputs: [
-            {
-                internalType: "address[]",
-                name: "newBeneficiaries",
-                type: "address[]",
-            },
-            {
-                internalType: "uint256[]",
-                name: "newAmounts",
-                type: "uint256[]",
-            },
-        ],
-        name: "addBeneficiaries",
-        outputs: [],
+        name: "approve",
+        outputs: [{ internalType: "bool", name: "", type: "bool" }],
         stateMutability: "nonpayable",
         type: "function",
     },
     {
-        inputs: [
-            {
-                internalType: "address",
-                name: "beneficiary",
-                type: "address",
-            },
-        ],
-        name: "calculateReward",
-        outputs: [
-            {
-                internalType: "uint256",
-                name: "",
-                type: "uint256",
-            },
-        ],
-        stateMutability: "view",
-        type: "function",
-    },
-    {
-        inputs: [],
-        name: "claim",
-        outputs: [],
-        stateMutability: "nonpayable",
-        type: "function",
-    },
-    {
-        inputs: [
-            {
-                internalType: "address",
-                name: "beneficiary",
-                type: "address",
-            },
-        ],
-        name: "getLastClaimTime",
-        outputs: [
-            {
-                internalType: "uint256",
-                name: "",
-                type: "uint256",
-            },
-        ],
-        stateMutability: "view",
-        type: "function",
-    },
-    {
-        inputs: [],
-        name: "interval",
-        outputs: [
-            {
-                internalType: "uint32",
-                name: "",
-                type: "uint32",
-            },
-        ],
-        stateMutability: "view",
-        type: "function",
-    },
-    {
-        inputs: [
-            {
-                internalType: "address",
-                name: "beneficiary",
-                type: "address",
-            },
-        ],
-        name: "isParticipantInVesting",
-        outputs: [
-            {
-                internalType: "bool",
-                name: "",
-                type: "bool",
-            },
-        ],
-        stateMutability: "view",
-        type: "function",
-    },
-    {
-        inputs: [],
-        name: "owner",
-        outputs: [
-            {
-                internalType: "address",
-                name: "",
-                type: "address",
-            },
-        ],
-        stateMutability: "view",
-        type: "function",
-    },
-    {
-        inputs: [],
-        name: "renounceOwnership",
+        inputs: [{ internalType: "uint256", name: "amount", type: "uint256" }],
+        name: "bridge",
         outputs: [],
         stateMutability: "nonpayable",
         type: "function",
     },
     {
         inputs: [],
-        name: "repsCount",
-        outputs: [
-            {
-                internalType: "uint16",
-                name: "",
-                type: "uint16",
-            },
-        ],
+        name: "calculateFee",
+        outputs: [{ internalType: "uint256", name: "feeAmount", type: "uint256" }],
         stateMutability: "view",
-        type: "function",
-    },
-    {
-        inputs: [],
-        name: "startDate",
-        outputs: [
-            {
-                internalType: "uint256",
-                name: "",
-                type: "uint256",
-            },
-        ],
-        stateMutability: "view",
-        type: "function",
-    },
-    {
-        inputs: [
-            {
-                internalType: "address",
-                name: "newOwner",
-                type: "address",
-            },
-        ],
-        name: "transferOwnership",
-        outputs: [],
-        stateMutability: "nonpayable",
-        type: "function",
-    },
-    {
-        inputs: [
-            {
-                internalType: "address",
-                name: "",
-                type: "address",
-            },
-        ],
-        name: "vestingSchedules",
-        outputs: [
-            {
-                internalType: "uint256",
-                name: "totalAmount",
-                type: "uint256",
-            },
-            {
-                internalType: "uint256",
-                name: "claimedAmount",
-                type: "uint256",
-            },
-            {
-                internalType: "uint256",
-                name: "lastClaimTime",
-                type: "uint256",
-            },
-        ],
-        stateMutability: "view",
-        type: "function",
-    },
-    {
-        inputs: [],
-        name: "withdrawTokens",
-        outputs: [],
-        stateMutability: "nonpayable",
         type: "function",
     },
 ];
@@ -236,88 +30,143 @@ import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethe
 const claimButtonEl = document.querySelector(".claim-button");
 const rewardAmountEl = document.querySelector(".reward-amount");
 const vestingCalendarEl = document.querySelector(".content");
+const select = document.querySelector("#bridgeType");
 
-const contractAddress = "0xfE155287640ad10d36f5bb94FEFC498d268d088C";
+const inputBsc = document.querySelector("#inpBsc");
+const inputEth = document.querySelector("#inpEth");
+
+const feeEl = document.querySelector("#gasFee");
+
+const bscTokenAddress = "0x0838A3E9512b18Ee66916064574a75D6ae1F2ddd";
+const ethTokenAddress = "0x46857BCA993e5D70D2842c29427D6352165f9A4F";
+const bscBridgeAddress = "0x4Bb50669e1C2d7fdf23590DF6CA2eCca1cC707Fc";
+const ethBridgeAddress = "0xD2b6Ad52A74eBb0590db43ADb3C152d2c927c09b";
+
 const tokenDecimals = 6;
-const targetChainId = 56;
-// const targetChainId = 11155111;
+// const targetBSCChainId = 56;
+// const targetEthChainId = 1;
 
-let signer, contract, walletConnected, userAddress;
+const targetBSCChainId = 97;
+const targetEthChainId = 11155111;
 
-let totalVestingAmount = 0;
+let signer, ethTokenContract, bscTokenContract, ethBridgeContract, bscBridgeContract, walletConnected, userAddress;
 
-async function updateCalendar() {
-    const lastClaimTimestamp = await contract.getLastClaimTime(userAddress);
-    const startDate = await contract.startDate();
-    const interval = await contract.interval();
-    const repsCount = await contract.repsCount();
-    const userData = await contract.vestingSchedules(userAddress);
-    const totalAmount = userData.totalAmount;
-
-    const vestingDates = [];
-
-    for (let i = 0; i < repsCount; i++) {
-        vestingDates[i] = Number(startDate) + Number(interval) * i;
+async function calculateFee() {
+    let fee;
+    if (select.value === "BSCtoETH") {
+        fee = await bscBridgeContract.calculateFee();
+    } else {
+        fee = await ethBridgeContract.calculateFee();
     }
-
-    vestingCalendarEl.innerHTML = "";
-
-    vestingDates.forEach((date, i) => {
-        const jsdate = new Date(Number(date) * 1000);
-
-        const percent = Math.floor((1 * 10000) / Number(repsCount));
-
-        console.log(percent);
-        let amountToClaim;
-        if (i === vestingDates.length - 1) {
-            amountToClaim = Number(totalAmount) - totalVestingAmount;
-        } else {
-            amountToClaim = (Number(totalAmount) * percent) / 10000;
-            totalVestingAmount += amountToClaim;
-        }
-
-        console.log(amountToClaim);
-
-        vestingCalendarEl.insertAdjacentHTML(
-            "beforeend",
-            `
-            <div>${jsdate.toLocaleDateString() + " " + jsdate.toLocaleTimeString()}</div>
-            <div class="color-font">${ethers.formatUnits(amountToClaim, tokenDecimals)}</div>
-            <div>${date < lastClaimTimestamp ? "claimed" : "not claimed"}</div>
-        `
-        );
-    });
-}
-
-async function updateAmountToClaim() {
-    const amountToClaim = await contract.calculateReward(userAddress);
-    rewardAmountEl.innerHTML = ethers.formatUnits(amountToClaim, tokenDecimals);
+    return Number(fee) / 100;
 }
 
 async function connectWallet() {
     const provider = new ethers.BrowserProvider(window.ethereum);
     signer = await provider.getSigner();
+    let chainId = targetBSCChainId;
+    if (select.value === "BSCtoETH") {
+        chainId = targetBSCChainId;
+    } else {
+        chainId = targetEthChainId;
+    }
     await window.ethereum.request({
         method: "wallet_switchEthereumChain",
-        params: [{ chainId: "0x" + targetChainId.toString(16) }],
+        params: [{ chainId: "0x" + chainId.toString(16) }],
     });
-    claimButtonEl.innerHTML = "CLAIM";
+    claimButtonEl.innerHTML = "Bridge";
     walletConnected = true;
     userAddress = signer.address;
-    contract = new ethers.Contract(contractAddress, ABI, signer);
-    await updateCalendar();
-    await updateAmountToClaim();
+    ethTokenContract = new ethers.Contract(ethTokenAddress, ABI, signer);
+    bscTokenContract = new ethers.Contract(bscTokenAddress, ABI, signer);
+    ethBridgeContract = new ethers.Contract(ethBridgeAddress, ABI, signer);
+    bscBridgeContract = new ethers.Contract(bscBridgeAddress, ABI, signer);
+    const fee = await calculateFee();
+    feeEl.innerHTML = fee;
+    inputBsc.disabled = false;
+    inputEth.disabled = false;
+    await recalculateAmountBsc({ target: inputBsc });
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = async () => {
+            clearTimeout(timeout);
+            await func(...args);
+        };
+
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
 }
 
 async function onClaimBtnClick() {
-    if (walletConnected) {
-        const tx = await contract.claim();
-        await tx.wait();
-        await updateCalendar();
-        await updateAmountToClaim();
-    } else {
+    if (!walletConnected) {
         await connectWallet();
+        return;
+    }
+    await connectWallet();
+
+    if (select.value === "BSCtoETH") {
+        await recalculateAmountBsc({ target: inputBsc });
+        const tokenAmount = ethers.parseUnits(inputBsc.value, tokenDecimals);
+        if (+inputEth.value <= 0) {
+            return alert("Amount must be greater than 0");
+        }
+        const approveTx = await bscTokenContract.approve(bscBridgeAddress, tokenAmount);
+        await approveTx.wait();
+        const bridgeTx = await bscBridgeContract.bridge(tokenAmount);
+        await bridgeTx.wait();
+    } else {
+        await recalculateAmountEth({ target: inputEth });
+        const tokenAmount = ethers.parseUnits(inputEth.value, tokenDecimals);
+        if (+inputBsc.value <= 0) {
+            return alert("Amount must be greater than 0");
+        }
+        const approveTx = await ethTokenContract.approve(ethBridgeAddress, tokenAmount);
+        await approveTx.wait();
+        const bridgeTx = await ethBridgeContract.bridge(tokenAmount);
+        await bridgeTx.wait();
     }
 }
 
 claimButtonEl.addEventListener("click", onClaimBtnClick);
+
+async function recalculateAmountBsc({ target: { value } }) {
+    const fee = await calculateFee();
+
+    if (+value === 0) {
+        return;
+    }
+
+    if (select.value === "BSCtoETH") {
+        value = +value - fee;
+    } else {
+        value = +value + fee;
+    }
+
+    inputEth.value = value > 0 ? value : 0;
+}
+async function recalculateAmountEth({ target: { value } }) {
+    const fee = await calculateFee();
+
+    if (+value === 0) {
+        return;
+    }
+
+    if (select.value === "BSCtoETH") {
+        value = +value + fee;
+    } else {
+        value = +value - fee;
+    }
+
+    inputBsc.value = value > 0 ? value : 0;
+}
+
+inputBsc.addEventListener("input", debounce(recalculateAmountBsc, 500));
+inputEth.addEventListener("input", debounce(recalculateAmountEth, 500));
+
+select.addEventListener("change", async () => {
+    await connectWallet();
+});

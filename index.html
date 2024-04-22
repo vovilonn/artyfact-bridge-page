@@ -21,26 +21,27 @@
     </head>
     <body>
         <div class="wrapper">
-            <p class="main-title">$ARTY Claim</p>
+            <p class="main-title">$ARTY BSC to ETH Bridge</p>
             <div class="main-block">
                 <div class="claim-block">
-                    <div>Claimable amount</div>
-                    <div class="reward-amount">0.00</div>
-
-                    <button class="claim-button">CONNECT WALLET</button>
-                </div>
-                <div class="separator"></div>
-                <div class="vesting-periods">
-                    <p class="title">Vesting calendar</p>
-                    <div class="table-wrapper">
-                        <div class="header">
-                            <div>Unlock date</div>
-                            <div>Amount</div>
-                            <div>Status</div>
+                    <select name="bridgeType" id="bridgeType" class="select">
+                        <option value="BSCtoETH" selected>BSC to ETH</option>
+                        <option value="ETHtoBSC">ETH to BSC</option>
+                    </select>
+                    <div class="bridge">
+                        <div class="item">
+                            <span>BSC</span>
+                            <input type="number" class="inputBlock" id="inpBsc" min="0" value="0" disabled />
+                            ARTY
                         </div>
-                        <div class="separator"></div>
-                        <div class="content"></div>
+                        <div class="item">
+                            <span>ETH</span>
+                            <input type="number" class="inputBlock" id="inpEth" min="0" value="0" disabled />
+                            ARTY
+                        </div>
+                        <span>Gas fee: <span id="gasFee">0</span> ARTY</span>
                     </div>
+                    <button class="claim-button">Connect Wallet</button>
                 </div>
             </div>
         </div>
